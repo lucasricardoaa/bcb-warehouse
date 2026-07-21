@@ -1,0 +1,65 @@
+version: 2
+
+models:
+  - name: stg_usd_brl
+    description: >
+      Taxa de câmbio USD/BRL diária. View sobre a tabela Iceberg gerada pelo Glue Job.
+      Renomeia colunas para nomes semânticos sem transformar dados.
+    columns:
+      - name: serie_id
+        description: Identificador da série BCB (1)
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1]
+
+      - name: data_referencia
+        description: Data da observação
+        data_tests:
+          - not_null
+
+      - name: taxa_cambio_brl_usd
+        description: Taxa de câmbio em R$/US$. NULL indica valor fora do range válido (0.001–100).
+
+  - name: stg_selic
+    description: >
+      Taxa Selic acumulada no mês em % a.a. View sobre a tabela Iceberg do Glue Job.
+      Renomeia colunas para nomes semânticos sem transformar dados.
+    columns:
+      - name: serie_id
+        description: Identificador da série BCB (11)
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [11]
+
+      - name: data_referencia
+        description: Data da observação
+        data_tests:
+          - not_null
+
+      - name: taxa_selic_aa
+        description: Taxa Selic em % a.a. NULL indica valor fora do range válido (0–100).
+
+  - name: stg_ipca
+    description: >
+      IPCA variação mensal em %. View sobre a tabela Iceberg do Glue Job.
+      Renomeia colunas para nomes semânticos sem transformar dados.
+    columns:
+      - name: serie_id
+        description: Identificador da série BCB (433)
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [433]
+
+      - name: data_referencia
+        description: Data de referência do mês (dia 1)
+        data_tests:
+          - not_null
+
+      - name: variacao_mensal_pct
+        description: Variação mensal do IPCA em %. NULL indica valor fora do range válido (-10 a 50).

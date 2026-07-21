@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: int_indicadores_economicos
+    description: >
+      Unificação das três séries BCB (USD/BRL série 1, Selic série 11, IPCA série 433)
+      em formato longo normalizado. Granularidade: (serie_id, data_referencia).
+      Entrada para os modelos mart.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - serie_id
+              - data_referencia
+    columns:
+      - name: serie_id
+        description: Identificador da série BCB (1, 11 ou 433)
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 11, 433]
+          - relationships:
+              arguments:
+                to: ref('dim_serie')
+                field: serie_id
+
+      - name: data_referencia
+        description: >
+          Data da observação. Diária para USD/BRL e Selic; primeiro dia do mês para IPCA.
+        data_tests:
+          - not_null
+
+      - name: valor
+        description: Valor da série. NULL indica observação fora do range válido.
+
+      - name: periodicidade
+        description: Periodicidade da série (D=diária, M=mensal)
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['D', 'M']
+
+      - name: data_processamento
+        description: Timestamp de processamento dbt
+        data_tests:
+          - not_null

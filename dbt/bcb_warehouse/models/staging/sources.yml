@@ -1,0 +1,46 @@
+version: 2
+
+sources:
+  - name: bcb_warehouse_intermediate
+    description: >
+      Tabelas Iceberg geradas pelo Glue Job bcb-staging-transform.
+      Contêm dados limpos (tipos corretos, deduplicados, ranges validados)
+      prontos para modelagem pelo dbt.
+    database: awsdatacatalog
+    schema: bcb_warehouse
+    tables:
+      - name: usd_brl
+        description: >
+          Taxa de câmbio USD/BRL (série BCB 1) após transformação pelo Glue Job.
+          Granularidade diária. Valores out-of-range substituídos por NULL.
+        columns:
+          - name: serie_id
+            description: Identificador da série BCB (sempre 1 para USD/BRL)
+          - name: data
+            description: Data da observação (DATE)
+          - name: valor
+            description: Taxa de câmbio em R$/US$ (DECIMAL 18,6); NULL se out-of-range
+
+      - name: selic
+        description: >
+          Taxa Selic acumulada no mês (série BCB 11) após transformação pelo Glue Job.
+          Granularidade diária. Valores out-of-range substituídos por NULL.
+        columns:
+          - name: serie_id
+            description: Identificador da série BCB (sempre 11 para Selic)
+          - name: data
+            description: Data da observação (DATE)
+          - name: valor
+            description: Taxa Selic em % a.a. (DECIMAL 18,6); NULL se out-of-range
+
+      - name: ipca
+        description: >
+          IPCA variação mensal (série BCB 433) após transformação pelo Glue Job.
+          Granularidade mensal. Valores out-of-range substituídos por NULL.
+        columns:
+          - name: serie_id
+            description: Identificador da série BCB (sempre 433 para IPCA)
+          - name: data
+            description: Data de referência do mês (DATE, dia 1 do mês)
+          - name: valor
+            description: Variação mensal do IPCA em % (DECIMAL 18,6); NULL se out-of-range

@@ -1,0 +1,4 @@
+serie_id,nome,unidade,periodicidade,fonte,data_inicio_serie
+1,Taxa de câmbio - Livre - Dólar americano (compra),R$/US$,Diária,Banco Central do Brasil,1984-11-28
+11,Taxa de juros - Selic acumulada no mês,% a.a.,Diária,Banco Central do Brasil,1986-06-04
+433,IPCA - Variação mensal,%,Mensal,Banco Central do Brasil,1980-01-01

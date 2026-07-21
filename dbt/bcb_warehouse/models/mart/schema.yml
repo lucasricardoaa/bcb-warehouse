@@ -1,0 +1,251 @@
+version: 2
+
+models:
+  - name: dim_serie
+    description: >
+      Dimensão das séries BCB com surrogate key determinística (SHA-256 truncado, 32 chars).
+      Três séries: USD/BRL (1), Selic (11), IPCA (433).
+    columns:
+      - name: serie_sk
+        description: Surrogate key determinística (SHA-256 truncado de serie_id)
+        data_tests:
+          - not_null
+          - unique
+
+      - name: serie_id
+        description: Código da série no BCB
+        data_tests:
+          - not_null
+          - unique
+
+      - name: nome
+        description: Nome completo da série
+        data_tests:
+          - not_null
+
+      - name: unidade
+        description: Unidade de medida (R$/US$, % a.a., %)
+        data_tests:
+          - not_null
+
+      - name: periodicidade
+        description: Periodicidade das observações (Diária, Mensal)
+        data_tests:
+          - not_null
+
+      - name: fonte
+        description: Fonte dos dados
+        data_tests:
+          - not_null
+
+      - name: data_inicio_serie
+        description: Data de início histórico da série no BCB
+        data_tests:
+          - not_null
+
+  - name: dim_data
+    description: >
+      Dimensão calendário 2020-2030 com atributos de data, indicadores de dia útil
+      e feriado nacional (143 feriados pré-calculados).
+      Limitação: cobre apenas datas entre 2020-01-01 e 2030-12-31. Observações das
+      tabelas fato fora desse intervalo não encontram correspondência no join com
+      dim_data e são silenciosamente excluídas do resultado. Para expandir o range,
+      executar tools/generate_dim_data.py com --output-dir e atualizar dbt seed.
+    columns:
+      - name: data_sk
+        description: Surrogate key determinística (SHA-256 truncado de data)
+        data_tests:
+          - not_null
+          - unique
+
+      - name: data
+        description: Data no formato DATE
+        data_tests:
+          - not_null
+          - unique
+
+      - name: ano
+        description: Ano (2020–2030)
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "ano between 2020 and 2030"
+
+      - name: mes
+        description: Mês (1–12)
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "mes between 1 and 12"
+
+      - name: mes_nome
+        description: Nome do mês em português
+
+      - name: trimestre
+        description: Trimestre (1–4)
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "trimestre between 1 and 4"
+
+      - name: semestre
+        description: Semestre (1–2)
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "semestre between 1 and 2"
+
+      - name: dia_da_semana
+        description: Dia da semana (1=Segunda, 7=Domingo)
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "dia_da_semana between 1 and 7"
+
+      - name: dia_da_semana_nome
+        description: Nome do dia da semana em português
+
+      - name: eh_feriado_nacional
+        description: true se a data é feriado nacional brasileiro
+        data_tests:
+          - not_null
+
+      - name: eh_dia_util
+        description: true se é dia útil (segunda a sexta e não feriado nacional)
+        data_tests:
+          - not_null
+
+  - name: fct_cotacoes_diarias
+    description: >
+      Fato de cotações diárias: USD/BRL (série 1) e Selic (série 11).
+      Granularidade: (serie_fk, data_fk) — uma linha por série por dia.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - serie_fk
+              - data_fk
+      - dbt_utils.recency:
+          arguments:
+            datepart: day
+            field: data_processamento
+            interval: 10
+    columns:
+      - name: cotacao_sk
+        description: Surrogate key determinística (SHA-256 de serie_id + data_referencia)
+        data_tests:
+          - not_null
+          - unique
+          - dbt_utils.at_least_one
+
+      - name: serie_fk
+        description: FK para dim_serie.serie_sk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_serie')
+                field: serie_sk
+
+      - name: data_fk
+        description: FK para dim_data.data_sk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_data')
+                field: data_sk
+
+      - name: valor
+        description: Valor da cotação/taxa. NULL para observações fora do range válido.
+        data_tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "valor is null or (valor >= 0.001 and valor <= 100)"
+
+      - name: data_ingestao
+        description: >
+          Data de execução do dbt (current_date). Proxy da data de ingestão —
+          não representa a data em que o BCB publicou o dado, mas sim quando o
+          pipeline dbt rodou. Usar data_processamento para rastrear o ciclo ETL.
+        data_tests:
+          - not_null
+
+      - name: data_processamento
+        description: Timestamp de quando o Glue Job escreveu o dado na camada intermediate
+        data_tests:
+          - not_null
+
+  - name: fct_indicadores_mensais
+    description: >
+      Fato de indicadores mensais: IPCA (série 433).
+      Granularidade: (serie_fk, ano, mes) — uma linha por série por mês.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - serie_fk
+              - ano
+              - mes
+      - dbt_utils.recency:
+          arguments:
+            datepart: day
+            field: data_processamento
+            interval: 45
+    columns:
+      - name: indicador_sk
+        description: Surrogate key determinística (SHA-256 de serie_id + data_referencia)
+        data_tests:
+          - not_null
+          - dbt_utils.at_least_one
+          - unique
+
+      - name: serie_fk
+        description: FK para dim_serie.serie_sk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_serie')
+                field: serie_sk
+
+      - name: ano
+        description: Ano de referência do indicador
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "ano between 1980 and 2030"
+
+      - name: mes
+        description: Mês de referência do indicador (1–12)
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "mes between 1 and 12"
+
+      - name: valor
+        description: Variação mensal do IPCA em %. NULL para valores fora do range (-10 a 50).
+        data_tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "valor is null or (valor >= -10 and valor <= 50)"
+
+      - name: data_ingestao
+        description: >
+          Data de execução do dbt (current_date). Proxy da data de ingestão —
+          não representa a data em que o BCB publicou o dado, mas sim quando o
+          pipeline dbt rodou. Usar data_processamento para rastrear o ciclo ETL.
+        data_tests:
+          - not_null
+
+      - name: data_processamento
+        description: Timestamp de quando o Glue Job escreveu o dado na camada intermediate
+        data_tests:
+          - not_null

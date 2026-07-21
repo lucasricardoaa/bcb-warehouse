@@ -1,0 +1,23 @@
+bcb_warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      region_name: us-east-1
+
+      # Glue Data Catalog
+      database: awsdatacatalog
+      schema: bcb_warehouse
+
+      # S3
+      s3_staging_dir: "s3://bcb-warehouse/athena-results/"
+      s3_data_dir: "s3://bcb-warehouse/warehouse/"  # fallback; camadas definem paths específicos em dbt_project.yml
+
+      # Athena
+      work_group: primary
+      threads: 4
+
+      # Credenciais — preferir variáveis de ambiente ou IAM role
+      # aws_profile_name: default
+      # aws_access_key_id: "{{ env_var('AWS_ACCESS_KEY_ID') }}"
+      # aws_secret_access_key: "{{ env_var('AWS_SECRET_ACCESS_KEY') }}"

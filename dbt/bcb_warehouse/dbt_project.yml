@@ -1,0 +1,39 @@
+name: "bcb_warehouse"
+version: "0.1.0"
+config-version: 2
+
+profile: "bcb_warehouse"
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  bcb_warehouse:
+    staging:
+      # Views — sem cópia de dados; apenas renomeia colunas sobre as tabelas Iceberg do Glue Job
+      +materialized: view
+
+    intermediate:
+      +materialized: table
+      +table_type: iceberg
+      +format: parquet
+      +write_compression: snappy
+      +s3_data_dir: "s3://bcb-warehouse/warehouse/intermediate/"
+
+    mart:
+      +materialized: table
+      +table_type: iceberg
+      +format: parquet
+      +write_compression: snappy
+      +s3_data_dir: "s3://bcb-warehouse/warehouse/mart/"
+
+seeds:
+  bcb_warehouse:
+    +schema: bcb_warehouse

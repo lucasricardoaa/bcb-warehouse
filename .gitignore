@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual envs
+.venv*/
+venv/
+env/
+
+# dbt
+dbt/bcb_warehouse/target/
+dbt/bcb_warehouse/dbt_packages/
+dbt/bcb_warehouse/logs/
+dbt/bcb_warehouse/profiles.yml
+dbt/bcb_warehouse/.user.yml
+
+# Testes
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Credenciais e configs locais
+.env
+*.env.local
+
+# Spark / Hadoop
+derby.log
+metastore_db/
+spark-warehouse/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# Documentos internos
+docs/private/
