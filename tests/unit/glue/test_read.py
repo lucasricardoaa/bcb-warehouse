@@ -2,7 +2,8 @@
 Testes unitários para as funções de leitura do Glue Job.
 
 Os testes test_read_serie_* requerem PySpark com acesso ao filesystem local.
-No Windows, isso exige winutils.exe (ver conftest.py). Em CI (Linux) rodam sem restrições.
+No Windows, isso exige winutils.exe (ver conftest.py).
+Em CI (Linux) rodam sem restrições.
 
 Fixtures Parquet são escritas com PyArrow (schema idêntico ao bcb-pipeline)
 para evitar o createDataFrame, que falha com Python 3.14 + PySpark 3.5 (cloudpickle).
@@ -13,7 +14,6 @@ from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-import pytest
 from pyspark.sql import SparkSession
 
 from glue.jobs.bcb_staging_transform import read_serie, staging_path
@@ -61,7 +61,11 @@ def test_staging_path_ipca() -> None:
 @requires_spark
 def test_read_serie_columns(spark: SparkSession, tmp_path: Path) -> None:
     """Retorna exatamente as colunas [serie_id, data, valor] nessa ordem."""
-    _write_parquet(tmp_path / "data.parquet", [date(2024, 1, 2), date(2024, 1, 3)], [4.9823, 4.9915])
+    _write_parquet(
+        tmp_path / "data.parquet",
+        [date(2024, 1, 2), date(2024, 1, 3)],
+        [4.9823, 4.9915],
+    )
 
     result = read_serie(spark, str(tmp_path), serie_id=1)
 
@@ -85,7 +89,9 @@ def test_read_serie_row_count(spark: SparkSession, tmp_path: Path) -> None:
 @requires_spark
 def test_read_serie_populates_serie_id(spark: SparkSession, tmp_path: Path) -> None:
     """Todas as linhas têm serie_id igual ao valor fornecido."""
-    _write_parquet(tmp_path / "data.parquet", [date(2024, 1, 2), date(2024, 2, 1)], [0.42, 0.39])
+    _write_parquet(
+        tmp_path / "data.parquet", [date(2024, 1, 2), date(2024, 2, 1)], [0.42, 0.39]
+    )
 
     result = read_serie(spark, str(tmp_path), serie_id=433)
 
@@ -96,7 +102,9 @@ def test_read_serie_populates_serie_id(spark: SparkSession, tmp_path: Path) -> N
 @requires_spark
 def test_read_serie_tolerates_null_valor(spark: SparkSession, tmp_path: Path) -> None:
     """Linhas com valor nulo são preservadas (gaps são válidos na série)."""
-    _write_parquet(tmp_path / "data.parquet", [date(2024, 1, 2), date(2024, 1, 3)], [4.9823, None])
+    _write_parquet(
+        tmp_path / "data.parquet", [date(2024, 1, 2), date(2024, 1, 3)], [4.9823, None]
+    )
 
     result = read_serie(spark, str(tmp_path), serie_id=1)
 

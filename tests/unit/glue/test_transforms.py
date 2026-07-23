@@ -14,14 +14,12 @@ Cobre:
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-import pytest
 from pyspark.sql import SparkSession
 from pyspark.sql.types import DecimalType
-
-from unittest.mock import MagicMock
 
 from glue.jobs.bcb_staging_transform import (
     RANGE_RULES,
@@ -132,7 +130,9 @@ def test_cast_types_preserves_row_count(spark: SparkSession, tmp_path: Path) -> 
 
 
 @requires_spark
-def test_deduplicate_removes_exact_duplicates(spark: SparkSession, tmp_path: Path) -> None:
+def test_deduplicate_removes_exact_duplicates(
+    spark: SparkSession, tmp_path: Path
+) -> None:
     """Duplicatas exatas de (serie_id, data) são removidas."""
     _write_parquet(
         tmp_path / "d.parquet",
@@ -161,7 +161,9 @@ def test_deduplicate_keeps_unique_rows(spark: SparkSession, tmp_path: Path) -> N
 
 
 @requires_spark
-def test_validate_ranges_nullifies_negative_usd_brl(spark: SparkSession, tmp_path: Path) -> None:
+def test_validate_ranges_nullifies_negative_usd_brl(
+    spark: SparkSession, tmp_path: Path
+) -> None:
     """USD/BRL negativo é substituído por NULL."""
     _write_parquet(tmp_path / "d.parquet", [date(2024, 1, 2)], [-1.0])
     df = cast_types(read_serie(spark, str(tmp_path), serie_id=1))
@@ -173,7 +175,9 @@ def test_validate_ranges_nullifies_negative_usd_brl(spark: SparkSession, tmp_pat
 
 
 @requires_spark
-def test_validate_ranges_preserves_null_valor(spark: SparkSession, tmp_path: Path) -> None:
+def test_validate_ranges_preserves_null_valor(
+    spark: SparkSession, tmp_path: Path
+) -> None:
     """NULL de origem é preservado (gap válido na série)."""
     _write_parquet(tmp_path / "d.parquet", [date(2024, 1, 2)], [None])
     df = cast_types(read_serie(spark, str(tmp_path), serie_id=1))
@@ -196,7 +200,9 @@ def test_validate_ranges_keeps_valid_value(spark: SparkSession, tmp_path: Path) 
 
 
 @requires_spark
-def test_validate_ranges_ipca_negative_valid(spark: SparkSession, tmp_path: Path) -> None:
+def test_validate_ranges_ipca_negative_valid(
+    spark: SparkSession, tmp_path: Path
+) -> None:
     """IPCA negativo dentro do range (-10, 50) é preservado."""
     _write_parquet(tmp_path / "d.parquet", [date(2024, 1, 1)], [-0.61])
     df = cast_types(read_serie(spark, str(tmp_path), serie_id=433))
@@ -208,7 +214,9 @@ def test_validate_ranges_ipca_negative_valid(spark: SparkSession, tmp_path: Path
 
 
 @requires_spark
-def test_validate_ranges_ipca_extreme_nullified(spark: SparkSession, tmp_path: Path) -> None:
+def test_validate_ranges_ipca_extreme_nullified(
+    spark: SparkSession, tmp_path: Path
+) -> None:
     """IPCA acima de 50% ao mês é substituído por NULL (hiperinflação irreal)."""
     _write_parquet(tmp_path / "d.parquet", [date(2024, 1, 1)], [99.9])
     df = cast_types(read_serie(spark, str(tmp_path), serie_id=433))
