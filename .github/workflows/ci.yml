@@ -42,7 +42,7 @@ jobs:
         run: python -m pip install -e ".[dev]"
 
       - name: Install dbt
-        run: python -m pip install dbt-core==1.11.7 dbt-athena-community
+        run: python -m pip install dbt-core==1.11.7 dbt-athena-community "mypy-boto3-athena>=1.35.0"
 
       - name: Create dbt profiles.yml (CI — sem credenciais reais)
         run: |
