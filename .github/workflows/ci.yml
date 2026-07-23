@@ -45,7 +45,7 @@ jobs:
         run: python -m pip install dbt-core==1.11.7 dbt-athena-community
 
       - name: Install dbt packages
-        run: python -m dbt deps --project-dir dbt/bcb_warehouse --profiles-dir dbt/bcb_warehouse
+        run: dbt deps --project-dir dbt/bcb_warehouse --profiles-dir dbt/bcb_warehouse
 
       - name: Lint (ruff)
         run: python -m ruff check glue/ dags/ tools/ tests/
@@ -57,4 +57,4 @@ jobs:
         run: python -m pytest tests/unit/glue/ -v --cov=glue --cov-report=term-missing --cov-fail-under=80
 
       - name: Validate dbt syntax (dbt parse)
-        run: python -m dbt parse --project-dir dbt/bcb_warehouse --profiles-dir dbt/bcb_warehouse
+        run: dbt parse --project-dir dbt/bcb_warehouse --profiles-dir dbt/bcb_warehouse
