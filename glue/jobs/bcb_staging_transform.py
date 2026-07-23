@@ -25,7 +25,7 @@ import json
 import logging
 import sys
 
-try:
+try:  # pragma: no cover
     from awsglue.context import GlueContext
     from awsglue.job import Job
     from awsglue.utils import getResolvedOptions
@@ -41,7 +41,7 @@ from pyspark.sql.types import DecimalType
 # ── Logging estruturado JSON ──────────────────────────────────────────────────
 
 
-class _JsonFormatter(logging.Formatter):
+class _JsonFormatter(logging.Formatter):  # pragma: no cover
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, object] = {
             "time": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"),
@@ -262,7 +262,7 @@ def write_iceberg(
 
 
 def _init_spark(job_name: str) -> tuple[SparkSession, object | None]:
-    if _IN_GLUE:
+    if _IN_GLUE:  # pragma: no cover
         from pyspark import SparkContext
 
         sc = SparkContext()
@@ -284,7 +284,7 @@ def _init_spark(job_name: str) -> tuple[SparkSession, object | None]:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 
-def main() -> None:
+def main() -> None:  # pragma: no cover
     if _IN_GLUE:
         args = getResolvedOptions(
             sys.argv,
@@ -328,5 +328,5 @@ def main() -> None:
     log.info("Job concluído", extra={"job_name": job_name})
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

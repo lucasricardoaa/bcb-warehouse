@@ -96,6 +96,18 @@ def test_range_rules_ipca_allows_deflation() -> None:
     assert min_val < 0, "IPCA mensal pode ser negativo (deflação)"
 
 
+def test_validate_ranges_unknown_serie_returns_df_unchanged(
+    spark: SparkSession, tmp_path: Path
+) -> None:
+    """Série sem range definido retorna o DataFrame inalterado."""
+    _write_parquet(tmp_path / "d.parquet", [date(2024, 1, 2)], [1.0])
+    df = cast_types(read_serie(spark, str(tmp_path), serie_id=1))
+
+    result = validate_ranges(df, serie_id=999)
+
+    assert result.count() == df.count()
+
+
 # ── cast_types ────────────────────────────────────────────────────────────────
 
 
