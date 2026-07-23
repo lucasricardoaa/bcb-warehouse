@@ -1,5 +1,7 @@
 # bcb-warehouse
 
+[![CI](https://github.com/lucasricardoaa/bcb-warehouse/actions/workflows/ci.yml/badge.svg)](https://github.com/lucasricardoaa/bcb-warehouse/actions/workflows/ci.yml)
+
 Pipeline de transformação e modelagem dimensional sobre dados econômicos do Banco Central
 do Brasil (USD/BRL, Selic, IPCA). Projeto 2 de 3 de um portfólio de Engenharia de Dados
 com foco em AWS.

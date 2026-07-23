@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 11 (requerido pelo PySpark)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install project dependencies (Glue + dev)
+        run: python -m pip install -e ".[dev]"
+
+      - name: Install dbt
+        run: python -m pip install dbt-core==1.11.7 dbt-athena-community
+
+      - name: Install dbt packages
+        run: python -m dbt deps --project-dir dbt/bcb_warehouse --profiles-dir dbt/bcb_warehouse
+
+      - name: Lint (ruff)
+        run: python -m ruff check glue/ dags/ tools/ tests/
+
+      - name: Type check (mypy)
+        run: python -m mypy glue/ dags/ tools/
+
+      - name: Unit tests — Glue Job (pytest)
+        run: python -m pytest tests/unit/glue/ -v --cov=glue --cov-report=term-missing --cov-fail-under=80
+
+      - name: Validate dbt syntax (dbt parse)
+        run: python -m dbt parse --project-dir dbt/bcb_warehouse --profiles-dir dbt/bcb_warehouse
