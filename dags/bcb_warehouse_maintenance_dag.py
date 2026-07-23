@@ -50,7 +50,7 @@ def _optimize_sql(table: str) -> str:
 
 # ── DAG ─────────────────────────────────────────────────────────────────────
 
-@dag(
+@dag(  # type: ignore[misc]
     dag_id="bcb_warehouse_maintenance",
     schedule="0 0 15 * *",  # dia 15 de cada mês às 00:00 UTC
     start_date=datetime(2024, 1, 1),

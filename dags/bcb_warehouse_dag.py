@@ -53,7 +53,7 @@ def _dbt_cmd(subcmd: str, selector: str | None = None) -> str:
 
 # ── DAG ─────────────────────────────────────────────────────────────────────
 
-@dag(
+@dag(  # type: ignore[misc]
     dag_id="bcb_warehouse",
     schedule=[_STAGING_DATASET],
     start_date=datetime(2024, 1, 1),

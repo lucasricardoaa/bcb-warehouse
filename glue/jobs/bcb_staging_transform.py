@@ -26,9 +26,9 @@ import logging
 import sys
 
 try:
-    from awsglue.context import GlueContext  # type: ignore[import]
-    from awsglue.job import Job  # type: ignore[import]
-    from awsglue.utils import getResolvedOptions  # type: ignore[import]
+    from awsglue.context import GlueContext
+    from awsglue.job import Job
+    from awsglue.utils import getResolvedOptions
 
     _IN_GLUE = True
 except ImportError:
@@ -263,7 +263,7 @@ def write_iceberg(
 
 def _init_spark(job_name: str) -> tuple[SparkSession, object | None]:
     if _IN_GLUE:
-        from pyspark import SparkContext  # type: ignore[import]
+        from pyspark import SparkContext
 
         sc = SparkContext()
         glue_ctx = GlueContext(sc)
@@ -320,7 +320,7 @@ def main() -> None:
             )
 
         if job is not None:
-            job.commit()  # type: ignore[union-attr]
+            job.commit()  # type: ignore[attr-defined]
 
     finally:
         spark.stop()
