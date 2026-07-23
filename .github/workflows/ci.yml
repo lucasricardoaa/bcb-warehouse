@@ -44,6 +44,21 @@ jobs:
       - name: Install dbt
         run: python -m pip install dbt-core==1.11.7 dbt-athena-community
 
+      - name: Create dbt profiles.yml (CI — sem credenciais reais)
+        run: |
+          cat > dbt/bcb_warehouse/profiles.yml <<'EOF'
+          bcb_warehouse:
+            target: dev
+            outputs:
+              dev:
+                type: athena
+                region_name: us-east-1
+                database: awsdatacatalog
+                schema: bcb_warehouse
+                s3_staging_dir: s3://bcb-warehouse/athena-results/
+                threads: 1
+          EOF
+
       - name: Install dbt packages
         run: dbt deps --project-dir dbt/bcb_warehouse --profiles-dir dbt/bcb_warehouse
 
